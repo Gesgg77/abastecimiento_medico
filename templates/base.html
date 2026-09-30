@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Abastecimiento Médico{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background: #f5f7fa; color: #1f2937; }
+        main { max-width: 900px; margin: 60px auto; padding: 32px; background: white; border-radius: 12px; }
+        a { color: #0f5fa8; }
+        footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid #ddd; font-size: 14px; }
+        code { background: #eef2f7; padding: 2px 5px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+<main>
+    {% block content %}{% endblock %}
+    <footer>
+        Alumno: {{ student_name }} | Sección: {{ student_section }} | Año: {{ student_year }}
+    </footer>
+</main>
+</body>
+</html>
