@@ -1,0 +1,26 @@
+# Checklist de entrega
+
+- [ ] PostgreSQL está funcionando.
+- [ ] Archivo `.env` creado localmente con contraseña correcta.
+- [ ] `STUDENT_SECTION` reemplazado por la sección real.
+- [ ] `python manage.py makemigrations usuarios catalogo pedidos`.
+- [ ] `python manage.py migrate`.
+- [ ] Gestor creado con `python manage.py crear_gestor ...`.
+- [ ] Registro de institución probado.
+- [ ] JWT access y refresh probado.
+- [ ] Confirmado que el JWT contiene `rol`.
+- [ ] CRUD de categorías probado con GESTOR.
+- [ ] CRUD de insumos probado con GESTOR.
+- [ ] GET público de catálogo probado sin token.
+- [ ] Filtro/búsqueda de insumos probado.
+- [ ] Carro probado con INSTITUCION.
+- [ ] Logout/login conserva el carro.
+- [ ] Agregar al carro NO modifica stock.
+- [ ] Confirmar solicitud descuenta stock.
+- [ ] Falta de stock rechaza toda la compra.
+- [ ] CANCELADO repone stock.
+- [ ] ENTREGADO no repone stock.
+- [ ] Swagger abre en `/api/docs/`.
+- [ ] Footer muestra nombre, sección y año.
+- [ ] No se publicó `.env`.
+- [ ] Repositorio está actualizado antes de la hora límite.
