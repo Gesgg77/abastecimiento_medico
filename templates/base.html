@@ -5,82 +5,299 @@
     <title>{% block title %}Abastecimiento Médico{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
+        :root {
+            --navy: #0b2942;
+            --blue: #0f5f8f;
+            --blue-2: #1677aa;
+            --ink: #17212b;
+            --muted: #667585;
+            --line: #dce5ed;
+            --surface: #ffffff;
+            --soft: #f5f8fb;
+            --success: #18794e;
+            --success-bg: #eaf8f1;
+        }
         * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body {
             margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #eef3f8;
-            color: #1f2937;
+            font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background:
+                radial-gradient(circle at top right, rgba(22,119,170,.10), transparent 28%),
+                #eef3f7;
+            color: var(--ink);
         }
         .topbar {
-            background: #0f3d5e;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: rgba(11,41,66,.96);
             color: white;
-            padding: 18px 28px;
-            font-weight: 700;
+            border-bottom: 1px solid rgba(255,255,255,.10);
+            backdrop-filter: blur(10px);
+        }
+        .nav {
+            max-width: 1180px;
+            margin: auto;
+            min-height: 68px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
             letter-spacing: .2px;
         }
-        .container {
-            max-width: 1100px;
-            margin: 42px auto;
-            padding: 0 20px;
-        }
-        .panel {
-            background: white;
-            border-radius: 16px;
-            padding: 34px;
-            box-shadow: 0 10px 30px rgba(15, 61, 94, .10);
-        }
-        h1, h2, h3 { margin-top: 0; }
-        h1 { font-size: 34px; color: #0f3d5e; }
-        .subtitle { font-size: 17px; color: #5b6470; line-height: 1.6; }
-        .grid {
+        .brand-mark {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 18px;
-            margin-top: 28px;
+            place-items: center;
+            background: white;
+            color: var(--navy);
+            font-size: 20px;
+            font-weight: 900;
         }
-        .card {
-            border: 1px solid #dbe4ec;
-            border-radius: 12px;
-            padding: 20px;
-            background: #fbfdff;
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
-        .card h3 { color: #163f59; margin-bottom: 8px; }
-        .card p { margin: 0; color: #66707a; line-height: 1.5; }
-        .btn {
-            display: inline-block;
-            margin-top: 24px;
-            padding: 12px 18px;
-            border-radius: 8px;
-            background: #0f5f8f;
-            color: white;
+        .nav-links a {
+            color: #dceaf4;
             text-decoration: none;
-            font-weight: 700;
-        }
-        .btn:hover { background: #0b4d75; }
-        footer {
-            margin-top: 36px;
-            padding-top: 18px;
-            border-top: 1px solid #dbe4ec;
-            color: #66707a;
+            padding: 9px 12px;
+            border-radius: 8px;
             font-size: 14px;
         }
-        code {
-            background: #edf2f7;
-            padding: 2px 6px;
-            border-radius: 5px;
+        .nav-links a:hover { background: rgba(255,255,255,.09); color: white; }
+
+        .container {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 34px 24px 46px;
+        }
+        .shell {
+            background: rgba(255,255,255,.88);
+            border: 1px solid rgba(220,229,237,.9);
+            border-radius: 22px;
+            box-shadow: 0 22px 60px rgba(29,55,75,.10);
+            overflow: hidden;
+        }
+        .content { padding: 38px; }
+
+        h1, h2, h3 { margin-top: 0; }
+        h1 {
+            color: var(--navy);
+            font-size: clamp(34px, 5vw, 54px);
+            line-height: 1.05;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+        }
+        h2 {
+            color: var(--navy);
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        h3 { color: #173f5b; margin-bottom: 8px; }
+        p { line-height: 1.65; }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #eaf4fb;
+            color: #0d5d89;
+            border: 1px solid #cce4f3;
+            padding: 7px 11px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 18px;
+        }
+        .subtitle {
+            max-width: 780px;
+            font-size: 18px;
+            color: var(--muted);
+            margin: 0;
+        }
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 26px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 0 17px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            background: var(--blue);
+            color: white;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 14px;
+        }
+        .btn:hover { background: #0c5079; }
+        .btn.secondary {
+            background: white;
+            color: var(--navy);
+            border-color: var(--line);
+        }
+        .btn.secondary:hover { background: var(--soft); }
+
+        .section { margin-top: 36px; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0,1fr));
+            gap: 16px;
+        }
+        .card {
+            border: 1px solid var(--line);
+            border-radius: 15px;
+            padding: 20px;
+            background: linear-gradient(180deg, #fff, #fbfdff);
+        }
+        .card p { margin: 0; color: var(--muted); font-size: 14px; }
+        .metric {
+            font-size: 30px;
+            font-weight: 850;
+            color: var(--navy);
+            margin-bottom: 4px;
+        }
+        .metric-label { color: var(--muted); font-size: 13px; }
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--success);
+            background: var(--success-bg);
+            border: 1px solid #c9ecd9;
+            padding: 7px 10px;
+            border-radius: 999px;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        .flow {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            align-items: stretch;
+        }
+        .step {
+            border: 1px solid var(--line);
+            border-radius: 13px;
+            background: white;
+            padding: 16px;
+            min-height: 108px;
+        }
+        .step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            background: #eaf4fb;
+            color: var(--blue);
+            font-size: 13px;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+        .step strong { display: block; color: var(--navy); margin-bottom: 5px; }
+        .step span { color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+        .api-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 10px;
+        }
+        .api-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid var(--line);
+            border-radius: 11px;
+            background: white;
+            padding: 12px 14px;
+        }
+        .method {
+            width: 52px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 900;
+            border-radius: 6px;
+            padding: 5px 6px;
+            background: #edf5fb;
+            color: #0f5f8f;
+        }
+        .endpoint { font-family: Consolas, monospace; font-size: 13px; color: #334155; }
+
+        footer {
+            margin-top: 38px;
+            padding: 18px 38px;
+            border-top: 1px solid var(--line);
+            background: #f8fafc;
+            color: var(--muted);
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+            .flow { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 620px) {
+            .nav { align-items: flex-start; flex-direction: column; padding-top: 14px; padding-bottom: 14px; }
+            .content { padding: 24px; }
+            .grid, .flow, .api-list { grid-template-columns: 1fr; }
+            .container { padding-left: 14px; padding-right: 14px; }
         }
     </style>
 </head>
 <body>
-    <div class="topbar">Sistema de Abastecimiento Médico</div>
-    <div class="container">
-        <main class="panel">
-            {% block content %}{% endblock %}
-            <footer>
-                Alumno: {{ student_name }} | Sección: {{ student_section }} | Año: {{ student_year }}
-            </footer>
-        </main>
+<header class="topbar">
+    <div class="nav">
+        <div class="brand">
+            <div class="brand-mark">+</div>
+            <div>Abastecimiento Médico</div>
+        </div>
+        <nav class="nav-links">
+            <a href="/">Inicio</a>
+            <a href="/api/insumos/">Insumos</a>
+            <a href="/api/categorias/">Categorías</a>
+            <a href="/api/docs/">API Docs</a>
+        </nav>
     </div>
+</header>
+
+<div class="container">
+    <div class="shell">
+        <main class="content">
+            {% block content %}{% endblock %}
+        </main>
+        <footer>
+            <span>Alumno: {{ student_name }} | Sección: {{ student_section }} | Año: {{ student_year }}</span>
+            <span>Proyecto 5 · Desarrollo Backend</span>
+        </footer>
+    </div>
+</div>
 </body>
 </html>
