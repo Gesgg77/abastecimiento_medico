@@ -5,19 +5,82 @@
     <title>{% block title %}Abastecimiento Médico{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; background: #f5f7fa; color: #1f2937; }
-        main { max-width: 900px; margin: 60px auto; padding: 32px; background: white; border-radius: 12px; }
-        a { color: #0f5fa8; }
-        footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid #ddd; font-size: 14px; }
-        code { background: #eef2f7; padding: 2px 5px; border-radius: 4px; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #eef3f8;
+            color: #1f2937;
+        }
+        .topbar {
+            background: #0f3d5e;
+            color: white;
+            padding: 18px 28px;
+            font-weight: 700;
+            letter-spacing: .2px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 42px auto;
+            padding: 0 20px;
+        }
+        .panel {
+            background: white;
+            border-radius: 16px;
+            padding: 34px;
+            box-shadow: 0 10px 30px rgba(15, 61, 94, .10);
+        }
+        h1, h2, h3 { margin-top: 0; }
+        h1 { font-size: 34px; color: #0f3d5e; }
+        .subtitle { font-size: 17px; color: #5b6470; line-height: 1.6; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin-top: 28px;
+        }
+        .card {
+            border: 1px solid #dbe4ec;
+            border-radius: 12px;
+            padding: 20px;
+            background: #fbfdff;
+        }
+        .card h3 { color: #163f59; margin-bottom: 8px; }
+        .card p { margin: 0; color: #66707a; line-height: 1.5; }
+        .btn {
+            display: inline-block;
+            margin-top: 24px;
+            padding: 12px 18px;
+            border-radius: 8px;
+            background: #0f5f8f;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .btn:hover { background: #0b4d75; }
+        footer {
+            margin-top: 36px;
+            padding-top: 18px;
+            border-top: 1px solid #dbe4ec;
+            color: #66707a;
+            font-size: 14px;
+        }
+        code {
+            background: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
-<main>
-    {% block content %}{% endblock %}
-    <footer>
-        Alumno: {{ student_name }} | Sección: {{ student_section }} | Año: {{ student_year }}
-    </footer>
-</main>
+    <div class="topbar">Sistema de Abastecimiento Médico</div>
+    <div class="container">
+        <main class="panel">
+            {% block content %}{% endblock %}
+            <footer>
+                Alumno: {{ student_name }} | Sección: {{ student_section }} | Año: {{ student_year }}
+            </footer>
+        </main>
+    </div>
 </body>
 </html>
