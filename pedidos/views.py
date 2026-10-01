@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -73,3 +74,12 @@ class CambiarEstadoSolicitudView(APIView):
             nuevo_estado=entrada.validated_data["estado"],
         )
         return Response(SolicitudSerializer(solicitud).data)
+
+
+def pagina_solicitudes(request):
+    """
+    Panel visual de demostración.
+    Los datos NO se entregan desde esta vista: el navegador debe autenticarse
+    con JWT y consumir los endpoints protegidos de la API.
+    """
+    return render(request, "pedidos/solicitudes.html")
