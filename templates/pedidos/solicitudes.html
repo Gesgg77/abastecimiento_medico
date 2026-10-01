@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+{% block title %}Gestión de Solicitudes{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <span class="eyebrow">Gestión de bodega</span>
+        <h1 class="page-title">Solicitudes de abastecimiento</h1>
+        <p class="subtitle">
+            Panel visual para revisar el ciclo de las órdenes. El acceso a los datos
+            se realiza mediante JWT y respeta los permisos del rol GESTOR.
+        </p>
+    </div>
+    <a class="btn secondary" href="/api/docs/">Ver API en Swagger</a>
+</div>
+
+<section class="section" id="login-panel">
+    <div class="auth-card">
+        <div>
+            <h2>Acceso de Gestor</h2>
+            <p class="muted">Usa las mismas credenciales JWT del backend.</p>
+        </div>
+        <div class="auth-grid">
+            <div class="field">
+                <label for="username">Usuario</label>
+                <input id="username" autocomplete="username" placeholder="gestor">
+            </div>
+            <div class="field">
+                <label for="password">Contraseña</label>
+                <input id="password" type="password" autocomplete="current-password" placeholder="••••••••">
+            </div>
+            <button class="btn" type="button" onclick="iniciarSesion()">Ingresar</button>
+        </div>
+        <div id="login-error" class="form-message"></div>
+    </div>
+</section>
+
+<section class="section" id="dashboard" hidden>
+    <div class="page-header">
+        <div>
+            <h2 style="margin-bottom:6px;">Resumen de operaciones</h2>
+            <span class="muted" id="sesion-label"></span>
+        </div>
+        <button class="btn secondary" type="button" onclick="cerrarSesion()">Cerrar sesión</button>
+    </div>
+
+    <div class="grid stats-grid" style="margin-top:18px;">
+        <div class="card stat-card">
+            <div class="metric" id="total-count">0</div>
+            <div class="metric-label">Solicitudes totales</div>
+        </div>
+        <div class="card stat-card">
+            <div class="metric" id="pagadas-count">0</div>
+            <div class="metric-label">Pagadas</div>
+        </div>
+        <div class="card stat-card">
+            <div class="metric" id="finalizadas-count">0</div>
+            <div class="metric-label">Entregadas / canceladas</div>
+        </div>
+    </div>
+
+    <div class="table-card section">
+        <div class="table-title">
+            <div>
+                <h2 style="margin-bottom:4px;">Historial de solicitudes</h2>
+                <span class="muted">El estado se cambia usando el endpoint protegido por rol.</span>
+            </div>
+            <button class="btn secondary" type="button" onclick="cargarSolicitudes()">Actualizar</button>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Institución</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Despacho</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="solicitudes-body">
+                    <tr><td colspan="7" class="empty-state">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="accion-mensaje" class="form-message"></div>
+</section>
+
+<script>
+let accessToken = sessionStorage.getItem("gestor_access");
+let gestorNombre = sessionStorage.getItem("gestor_username") || "";
+
+function dinero(valor) {
+    return new Intl.NumberFormat("es-CL", {
+        style: "currency",
+        currency: "CLP",
+        maximumFractionDigits: 0
+    }).format(Number(valor || 0));
+}
+
+function fecha(valor) {
+    return new Intl.DateTimeFormat("es-CL", {
+        dateStyle: "medium",
+        timeStyle: "short"
+    }).format(new Date(valor));
+}
+
+function badgeEstado(estado) {
+    const clases = {
+        "PAGADO": "success",
+        "ENTREGADO": "info",
+        "CANCELADO": "danger",
+        "PENDIENTE": "warning"
+    };
+    return '<span class="badge ' + (clases[estado] || "warning") + '">' + estado + '</span>';
+}
+
+async function iniciarSesion() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+    const error = document.getElementById("login-error");
+    error.textContent = "Verificando credenciales...";
+
+    try {
+        const respuesta = await fetch("/api/auth/token/", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({username, password})
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error("Usuario o contraseña incorrectos.");
+        }
+
+        if (datos.rol !== "GESTOR") {
+            throw new Error("Este panel requiere un usuario con rol GESTOR.");
+        }
+
+        accessToken = datos.access;
+        gestorNombre = datos.username;
+        sessionStorage.setItem("gestor_access", accessToken);
+        sessionStorage.setItem("gestor_username", gestorNombre);
+        error.textContent = "";
+        mostrarDashboard();
+        await cargarSolicitudes();
+    } catch (e) {
+        error.textContent = e.message;
+    }
+}
+
+function mostrarDashboard() {
+    document.getElementById("login-panel").hidden = true;
+    document.getElementById("dashboard").hidden = false;
+    document.getElementById("sesion-label").textContent = "Sesión JWT activa: " + gestorNombre;
+}
+
+function cerrarSesion() {
+    sessionStorage.removeItem("gestor_access");
+    sessionStorage.removeItem("gestor_username");
+    accessToken = null;
+    gestorNombre = "";
+    document.getElementById("dashboard").hidden = true;
+    document.getElementById("login-panel").hidden = false;
+}
+
+async function apiProtegida(url, opciones = {}) {
+    const headers = opciones.headers || {};
+    headers["Authorization"] = "Bearer " + accessToken;
+    if (opciones.body) headers["Content-Type"] = "application/json";
+
+    const respuesta = await fetch(url, {...opciones, headers});
+
+    if (respuesta.status === 401) {
+        cerrarSesion();
+        throw new Error("La sesión JWT expiró. Ingresa nuevamente.");
+    }
+
+    const datos = await respuesta.json().catch(() => ({}));
+    if (!respuesta.ok) {
+        const detalle = datos.detail || JSON.stringify(datos);
+        throw new Error(detalle);
+    }
+    return datos;
+}
+
+async function cargarSolicitudes() {
+    const tbody = document.getElementById("solicitudes-body");
+    const mensaje = document.getElementById("accion-mensaje");
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Cargando solicitudes...</td></tr>';
+    mensaje.textContent = "";
+
+    try {
+        const datos = await apiProtegida("/api/solicitudes/");
+        const solicitudes = Array.isArray(datos) ? datos : (datos.results || []);
+
+        document.getElementById("total-count").textContent = solicitudes.length;
+        document.getElementById("pagadas-count").textContent =
+            solicitudes.filter(s => s.estado === "PAGADO").length;
+        document.getElementById("finalizadas-count").textContent =
+            solicitudes.filter(s => ["ENTREGADO", "CANCELADO"].includes(s.estado)).length;
+
+        if (!solicitudes.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No existen solicitudes registradas todavía.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = solicitudes.map(s => {
+            const despacho = s.orden_despacho && s.orden_despacho.codigo
+                ? '<code>' + s.orden_despacho.codigo.slice(0, 8) + '...</code>'
+                : '—';
+
+            const acciones = s.estado === "PAGADO"
+                ? '<div class="row-actions">' +
+                    '<button class="mini-btn success" onclick="cambiarEstado(' + s.id + ', \'ENTREGADO\')">Entregar</button>' +
+                    '<button class="mini-btn danger" onclick="cambiarEstado(' + s.id + ', \'CANCELADO\')">Cancelar</button>' +
+                  '</div>'
+                : '<span class="muted">Finalizada</span>';
+
+            return '<tr>' +
+                '<td><strong>#' + s.id + '</strong></td>' +
+                '<td>' + (s.institucion_nombre || ('Institución #' + s.institucion)) + '</td>' +
+                '<td>' + fecha(s.creado_en) + '</td>' +
+                '<td class="money">' + dinero(s.total) + '</td>' +
+                '<td>' + badgeEstado(s.estado) + '</td>' +
+                '<td>' + despacho + '</td>' +
+                '<td>' + acciones + '</td>' +
+            '</tr>';
+        }).join("");
+    } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">' + e.message + '</td></tr>';
+    }
+}
+
+async function cambiarEstado(id, estado) {
+    const texto = estado === "CANCELADO"
+        ? "Cancelar esta solicitud devolverá el stock al inventario. ¿Continuar?"
+        : "¿Marcar esta solicitud como ENTREGADA?";
+
+    if (!confirm(texto)) return;
+
+    const mensaje = document.getElementById("accion-mensaje");
+    try {
+        await apiProtegida("/api/solicitudes/" + id + "/estado/", {
+            method: "PATCH",
+            body: JSON.stringify({estado})
+        });
+        mensaje.textContent = "Solicitud #" + id + " actualizada a " + estado + ".";
+        await cargarSolicitudes();
+    } catch (e) {
+        mensaje.textContent = e.message;
+    }
+}
+
+if (accessToken) {
+    mostrarDashboard();
+    cargarSolicitudes();
+}
+</script>
+{% endblock %}
