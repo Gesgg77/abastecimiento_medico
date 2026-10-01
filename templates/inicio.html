@@ -1,8 +1,31 @@
 {% extends "base.html" %}
-{% block title %}API Abastecimiento Médico{% endblock %}
+{% block title %}Abastecimiento Médico{% endblock %}
 {% block content %}
-<h1>Abastecimiento Médico</h1>
-<p>Backend académico para pedidos de insumos médicos y farmacia.</p>
-<p><a href="/api/docs/">Abrir documentación Swagger / OpenAPI</a></p>
-<p>La gestión se realiza mediante endpoints REST protegidos por JWT; no depende del panel de administración de Django.</p>
+<h1>Plataforma de Abastecimiento Médico</h1>
+<p class="subtitle">
+    Backend B2B para la gestión de insumos médicos y farmacia.
+    El sistema permite administrar catálogo, autenticación por roles,
+    carro persistente, solicitudes y control transaccional de stock.
+</p>
+
+<div class="grid">
+    <div class="card">
+        <h3>Catálogo</h3>
+        <p>Consulta pública de categorías e insumos médicos disponibles.</p>
+    </div>
+    <div class="card">
+        <h3>Instituciones</h3>
+        <p>Carro persistente, confirmación de solicitudes e historial de compras.</p>
+    </div>
+    <div class="card">
+        <h3>Gestión de Bodega</h3>
+        <p>CRUD de inventario y actualización controlada del estado de solicitudes.</p>
+    </div>
+    <div class="card">
+        <h3>Seguridad</h3>
+        <p>Autenticación JWT con tokens access/refresh y permisos según rol.</p>
+    </div>
+</div>
+
+<a class="btn" href="/api/docs/">Abrir documentación de la API</a>
 {% endblock %}
