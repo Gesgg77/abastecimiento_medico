@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Catálogo de Insumos{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <span class="eyebrow">Catálogo médico</span>
+        <h1 class="page-title">Insumos disponibles</h1>
+        <p class="subtitle">Consulta de inventario, lotes, vencimientos y precios por caja.</p>
+    </div>
+    <a class="btn secondary" href="/api/docs/">Gestionar mediante API</a>
+</div>
+
+<div class="grid stats-grid">
+    <div class="card stat-card">
+        <div class="metric">{{ total_insumos }}</div>
+        <div class="metric-label">Insumos registrados</div>
+    </div>
+    <div class="card stat-card">
+        <div class="metric">{{ stock_total }}</div>
+        <div class="metric-label">Cajas disponibles</div>
+    </div>
+    <div class="card stat-card">
+        <div class="metric">{{ stock_bajo }}</div>
+        <div class="metric-label">Productos con stock bajo</div>
+    </div>
+</div>
+
+<section class="section">
+    <form method="get" class="filter-bar">
+        <div class="field">
+            <label for="q">Buscar</label>
+            <input id="q" name="q" value="{{ busqueda }}" placeholder="Nombre, principio activo o lote">
+        </div>
+        <div class="field">
+            <label for="categoria">Categoría</label>
+            <select id="categoria" name="categoria">
+                <option value="">Todas las categorías</option>
+                {% for categoria in categorias %}
+                    <option value="{{ categoria.id }}" {% if categoria_id == categoria.id|stringformat:"s" %}selected{% endif %}>
+                        {{ categoria.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button class="btn" type="submit">Filtrar</button>
+            <a class="btn secondary" href="/catalogo/insumos/">Limpiar</a>
+        </div>
+    </form>
+</section>
+
+<section class="section">
+    <div class="table-card">
+        <div class="table-title">
+            <div>
+                <h2 style="margin-bottom:4px;">Inventario de bodega</h2>
+                <span class="muted">Resultados: {{ insumos|length }}</span>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Insumo</th>
+                        <th>Categoría</th>
+                        <th>Lote</th>
+                        <th>Vencimiento</th>
+                        <th>Precio caja</th>
+                        <th>Stock</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for insumo in insumos %}
+                    <tr>
+                        <td>
+                            <strong>{{ insumo.nombre_comercial }}</strong>
+                            {% if insumo.principio_activo %}
+                                <small>{{ insumo.principio_activo }}</small>
+                            {% endif %}
+                        </td>
+                        <td><span class="tag">{{ insumo.categoria.nombre }}</span></td>
+                        <td>{{ insumo.lote }}</td>
+                        <td>{{ insumo.fecha_vencimiento|date:"d/m/Y" }}</td>
+                        <td class="money">$ {{ insumo.precio_caja|floatformat:0 }}</td>
+                        <td>
+                            {% if insumo.stock == 0 %}
+                                <span class="badge danger">Sin stock</span>
+                            {% elif insumo.stock <= 10 %}
+                                <span class="badge warning">{{ insumo.stock }} cajas</span>
+                            {% else %}
+                                <span class="badge success">{{ insumo.stock }} cajas</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="empty-state">No hay insumos que coincidan con la búsqueda.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}
