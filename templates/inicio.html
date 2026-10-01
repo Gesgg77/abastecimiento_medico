@@ -1,31 +1,140 @@
 {% extends "base.html" %}
-{% block title %}Abastecimiento Médico{% endblock %}
+{% block title %}Plataforma de Abastecimiento Médico{% endblock %}
+
 {% block content %}
-<h1>Plataforma de Abastecimiento Médico</h1>
-<p class="subtitle">
-    Backend B2B para la gestión de insumos médicos y farmacia.
-    El sistema permite administrar catálogo, autenticación por roles,
-    carro persistente, solicitudes y control transaccional de stock.
-</p>
+<section>
+    <span class="eyebrow">Sistema B2B · Django REST Framework · PostgreSQL</span>
+    <h1>Control de abastecimiento médico, inventario y solicitudes.</h1>
+    <p class="subtitle">
+        Plataforma backend para instituciones de salud y gestión de bodega farmacéutica.
+        Integra catálogo de insumos, autenticación JWT por roles, carro persistente,
+        checkout transaccional y trazabilidad del stock.
+    </p>
 
-<div class="grid">
-    <div class="card">
-        <h3>Catálogo</h3>
-        <p>Consulta pública de categorías e insumos médicos disponibles.</p>
+    <div class="hero-actions">
+        <a class="btn" href="/api/docs/">Abrir Swagger / OpenAPI</a>
+        <a class="btn secondary" href="/api/insumos/">Ver catálogo API</a>
     </div>
-    <div class="card">
-        <h3>Instituciones</h3>
-        <p>Carro persistente, confirmación de solicitudes e historial de compras.</p>
-    </div>
-    <div class="card">
-        <h3>Gestión de Bodega</h3>
-        <p>CRUD de inventario y actualización controlada del estado de solicitudes.</p>
-    </div>
-    <div class="card">
-        <h3>Seguridad</h3>
-        <p>Autenticación JWT con tokens access/refresh y permisos según rol.</p>
-    </div>
-</div>
+</section>
 
-<a class="btn" href="/api/docs/">Abrir documentación de la API</a>
+<section class="section">
+    <div style="display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;">
+        <h2 style="margin-bottom:0;">Estado del sistema</h2>
+        <span class="status" id="api-status"><span class="dot"></span> Verificando API</span>
+    </div>
+
+    <div class="grid" style="margin-top:16px;">
+        <div class="card">
+            <div class="metric" id="insumos-count">—</div>
+            <div class="metric-label">Insumos registrados</div>
+        </div>
+        <div class="card">
+            <div class="metric" id="categorias-count">—</div>
+            <div class="metric-label">Categorías disponibles</div>
+        </div>
+        <div class="card">
+            <div class="metric">2</div>
+            <div class="metric-label">Roles de acceso</div>
+        </div>
+        <div class="card">
+            <div class="metric">JWT</div>
+            <div class="metric-label">Autenticación access + refresh</div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <h2>Flujo principal de una solicitud</h2>
+    <div class="flow">
+        <div class="step">
+            <div class="step-number">1</div>
+            <strong>Catálogo</strong>
+            <span>La institución consulta insumos y disponibilidad.</span>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <strong>Carro persistente</strong>
+            <span>Los ítems quedan asociados al usuario en PostgreSQL.</span>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <strong>Confirmación</strong>
+            <span>La API valida stock dentro de una transacción atómica.</span>
+        </div>
+        <div class="step">
+            <div class="step-number">4</div>
+            <strong>Pago</strong>
+            <span>Recién en PAGADO se descuenta el inventario.</span>
+        </div>
+        <div class="step">
+            <div class="step-number">5</div>
+            <strong>Entrega o cancelación</strong>
+            <span>ENTREGADO finaliza; CANCELADO repone existencias.</span>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <h2>Módulos del proyecto</h2>
+    <div class="grid">
+        <div class="card">
+            <h3>Catálogo médico</h3>
+            <p>Categorías e insumos con CRUD, búsqueda, filtros por precio y control de stock.</p>
+        </div>
+        <div class="card">
+            <h3>Instituciones</h3>
+            <p>Registro, autenticación, carro persistente y consulta de solicitudes propias.</p>
+        </div>
+        <div class="card">
+            <h3>Gestión de bodega</h3>
+            <p>Administración de inventario y cambios de estado protegidos por rol.</p>
+        </div>
+        <div class="card">
+            <h3>Seguridad y trazabilidad</h3>
+            <p>JWT, permisos DRF, historial de detalle y transacciones atómicas de inventario.</p>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <h2>Endpoints destacados</h2>
+    <div class="api-list">
+        <div class="api-item"><span class="method">POST</span><span class="endpoint">/api/auth/token/</span></div>
+        <div class="api-item"><span class="method">GET</span><span class="endpoint">/api/insumos/</span></div>
+        <div class="api-item"><span class="method">POST</span><span class="endpoint">/api/carro-insumos/</span></div>
+        <div class="api-item"><span class="method">POST</span><span class="endpoint">/api/solicitudes/confirmar/</span></div>
+        <div class="api-item"><span class="method">GET</span><span class="endpoint">/api/mis-solicitudes/</span></div>
+        <div class="api-item"><span class="method">PATCH</span><span class="endpoint">/api/solicitudes/{id}/estado/</span></div>
+    </div>
+</section>
+
+<script>
+    async function cargarResumen() {
+        const estado = document.getElementById("api-status");
+        try {
+            const [insumosResp, categoriasResp] = await Promise.all([
+                fetch("/api/insumos/"),
+                fetch("/api/categorias/")
+            ]);
+
+            if (!insumosResp.ok || !categoriasResp.ok) throw new Error("API no disponible");
+
+            const insumos = await insumosResp.json();
+            const categorias = await categoriasResp.json();
+
+            const totalInsumos = Array.isArray(insumos) ? insumos.length : (insumos.count ?? 0);
+            const totalCategorias = Array.isArray(categorias) ? categorias.length : (categorias.count ?? 0);
+
+            document.getElementById("insumos-count").textContent = totalInsumos;
+            document.getElementById("categorias-count").textContent = totalCategorias;
+            estado.innerHTML = '<span class="dot"></span> API operativa';
+        } catch (error) {
+            estado.textContent = "API sin respuesta";
+            document.getElementById("insumos-count").textContent = "—";
+            document.getElementById("categorias-count").textContent = "—";
+        }
+    }
+
+    cargarResumen();
+</script>
 {% endblock %}
