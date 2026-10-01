@@ -1,103 +1,89 @@
 # Abastecimiento Médico
 
-Proyecto académico de **Desarrollo Backend** con Django REST Framework y PostgreSQL.
+Proyecto académico de Desarrollo Backend con Django REST Framework y PostgreSQL.
 
-## Proyecto 5
-Plataforma B2B para pedidos de fármacos e insumos médicos. Maneja dos roles:
+## Descripción
 
-- **INSTITUCION**: consulta catálogo, administra su carro persistente, confirma solicitudes y revisa su historial.
-- **GESTOR**: administra categorías/insumos y cambia solicitudes PAGADAS a ENTREGADO o CANCELADO.
+Plataforma B2B para instituciones de salud y gestión de bodega farmacéutica.
 
-La solución no depende de `/admin/`. La gestión se realiza mediante endpoints REST y Swagger.
+Roles principales:
 
-## Requisitos principales implementados
+- INSTITUCION: consulta catálogo, administra su carro persistente, confirma solicitudes y revisa su historial.
+- GESTOR: administra categorías e insumos y actualiza solicitudes a ENTREGADO o CANCELADO.
+
+## Funcionalidades
 
 - PostgreSQL.
-- Usuario personalizado con `CHOICES` de rol.
-- JWT access + refresh con claim `rol`.
+- Usuario personalizado con roles mediante CHOICES.
+- JWT con access y refresh, incluyendo claim de rol.
 - CRUD de categorías e insumos.
-- Filtros con django-filter y búsqueda.
+- Filtros, búsqueda y ordenamiento.
 - Carro persistente 1:1 con el usuario.
-- CRUD de ítems del carro.
-- Checkout transaccional con `transaction.atomic`.
-- El stock NO baja al agregar al carro.
-- El stock se valida y descuenta al pasar a PAGADO.
-- Cancelar una solicitud repone el stock.
+- Confirmación de solicitudes con transaction.atomic.
+- Validación y descuento de stock al confirmar el pago.
+- Reposición de stock al cancelar.
 - Orden de despacho con UUID.
-- Swagger/OpenAPI en `/api/docs/`.
-- Vista base con footer de alumno, sección y año.
+- Swagger / OpenAPI.
+- Vistas HTML para presentación del sistema.
 
-## Instalación rápida
-
-### 1. Clonar y crear entorno
+## Ejecución
 
 ```powershell
-git clone https://github.com/Gesgg77/abastecimiento_medico.git
-cd abastecimiento_medico
 python -m venv venv
 .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-```
-
-### 2. Crear archivo .env
-
-Copia `.env.example` a `.env` y completa especialmente la contraseña de PostgreSQL y tu sección.
-
-```powershell
 Copy-Item .env.example .env
-```
-
-### 3. PostgreSQL
-
-Ejemplo usado por el proyecto:
-
-```sql
-CREATE USER abastecimiento_user WITH PASSWORD 'TU_PASSWORD';
-CREATE DATABASE abastecimiento_medico_db OWNER abastecimiento_user;
-```
-
-### 4. Crear tablas
-
-```powershell
 python manage.py makemigrations usuarios catalogo pedidos
 python manage.py migrate
-```
-
-### 5. Crear Gestor de Bodega sin Django Admin
-
-```powershell
-python manage.py crear_gestor gestor gestor@farmacia.cl ClaveSegura123!
-```
-
-### 6. Ejecutar
-
-```powershell
 python manage.py runserver
 ```
 
-Abrir:
+## PostgreSQL
 
-- Inicio: http://127.0.0.1:8000/
-- Swagger: http://127.0.0.1:8000/api/docs/
+Configurar en `.env`:
 
-## Endpoints principales
+```text
+DB_NAME=abastecimiento_medico_db
+DB_USER=abastecimiento_user
+DB_PASSWORD=TU_CLAVE
+DB_HOST=localhost
+DB_PORT=5432
+```
+
+## Usuario Gestor
+
+```powershell
+python manage.py crear_gestor gestor gestor@farmacia.cl Gestor12345!
+```
+
+## Rutas principales
+
+- Inicio: `/`
+- Catálogo visual: `/catalogo/insumos/`
+- Categorías visuales: `/catalogo/categorias/`
+- Panel de solicitudes: `/gestion/solicitudes/`
+- Swagger: `/api/docs/`
+
+## API principal
 
 | Método | Endpoint | Acceso |
 |---|---|---|
-| POST | `/api/auth/registro/` | Público, crea INSTITUCION |
+| POST | `/api/auth/registro/` | Público |
 | POST | `/api/auth/token/` | Público |
 | POST | `/api/auth/token/refresh/` | Público |
 | GET | `/api/categorias/` | Público |
-| POST/PUT/PATCH/DELETE | `/api/categorias/{id}/` | GESTOR |
+| POST | `/api/categorias/` | GESTOR |
+| PUT/PATCH/DELETE | `/api/categorias/{id}/` | GESTOR |
 | GET | `/api/insumos/` | Público |
-| POST/PUT/PATCH/DELETE | `/api/insumos/{id}/` | GESTOR |
+| POST | `/api/insumos/` | GESTOR |
+| PUT/PATCH/DELETE | `/api/insumos/{id}/` | GESTOR |
 | GET/POST/PUT/PATCH/DELETE | `/api/carro-insumos/` | INSTITUCION |
 | POST | `/api/solicitudes/confirmar/` | INSTITUCION |
 | GET | `/api/mis-solicitudes/` | INSTITUCION |
 | GET | `/api/solicitudes/` | GESTOR |
 | PATCH | `/api/solicitudes/{id}/estado/` | GESTOR |
 
-### Filtros de ejemplo
+## Filtros de insumos
 
 ```text
 /api/insumos/?categoria=1
@@ -107,34 +93,24 @@ Abrir:
 /api/insumos/?ordering=precio_caja
 ```
 
-## Flujo central
+## Flujo de solicitud
 
 ```text
 INSTITUCION
    ↓
-CARRO persistente (1:1)
+CARRO PERSISTENTE
    ↓
-ITEMS DEL CARRO
+CONFIRMAR SOLICITUD
    ↓
-POST /api/solicitudes/confirmar/
+VALIDAR STOCK
    ↓
-PENDIENTE
-   ↓ validación atómica de stock
-PAGADO → descuenta stock + genera orden de despacho
+PAGADO → DESCUENTA STOCK + GENERA ORDEN DE DESPACHO
    ↓
 ENTREGADO
+
 o
-CANCELADO → repone stock
+
+CANCELADO → REPONE STOCK
 ```
 
-## Importante antes de entregar
-
-Edita `.env`:
-
-```text
-STUDENT_NAME=Jorge Essus
-STUDENT_SECTION=TU_SECCION
-STUDENT_YEAR=2026
-```
-
-Reemplaza `TU_SECCION` por tu sección real. El archivo `.env` está ignorado por Git y no debe contenerse en el repositorio.
+El archivo `.env` no se incluye en el repositorio.
