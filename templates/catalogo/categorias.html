@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Categorías de Insumos{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <span class="eyebrow">Organización del catálogo</span>
+        <h1 class="page-title">Categorías</h1>
+        <p class="subtitle">Clasificación de medicamentos, material quirúrgico y equipamiento médico.</p>
+    </div>
+    <a class="btn secondary" href="/api/docs/">Gestionar mediante API</a>
+</div>
+
+<div class="grid stats-grid">
+    <div class="card stat-card">
+        <div class="metric">{{ total_categorias }}</div>
+        <div class="metric-label">Categorías registradas</div>
+    </div>
+    <div class="card stat-card">
+        <div class="metric">{{ total_insumos }}</div>
+        <div class="metric-label">Insumos del catálogo</div>
+    </div>
+</div>
+
+<section class="section">
+    <h2>Resumen por categoría</h2>
+    <div class="category-grid">
+        {% for categoria in categorias %}
+            <article class="category-card">
+                <div class="category-icon">+</div>
+                <div>
+                    <h3>{{ categoria.nombre }}</h3>
+                    <p>{{ categoria.descripcion|default:"Categoría de insumos médicos." }}</p>
+                </div>
+                <div class="category-meta">
+                    <span><strong>{{ categoria.total_insumos }}</strong> insumos</span>
+                    <span><strong>{{ categoria.stock_total|default:0 }}</strong> cajas en stock</span>
+                </div>
+                <a href="/catalogo/insumos/?categoria={{ categoria.id }}" class="text-link">Ver insumos →</a>
+            </article>
+        {% empty %}
+            <div class="empty-state">Todavía no existen categorías registradas.</div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
