@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-from catalogo.models import Insumo
 from .models import Carro, DetalleSolicitud, ItemCarro, OrdenDespacho, Solicitud
 
 
@@ -53,6 +52,7 @@ class OrdenDespachoSerializer(serializers.ModelSerializer):
 
 
 class SolicitudSerializer(serializers.ModelSerializer):
+    institucion_nombre = serializers.CharField(source="institucion.username", read_only=True)
     detalles = DetalleSolicitudSerializer(many=True, read_only=True)
     orden_despacho = OrdenDespachoSerializer(read_only=True)
 
@@ -61,6 +61,7 @@ class SolicitudSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "institucion",
+            "institucion_nombre",
             "estado",
             "total",
             "creado_en",
