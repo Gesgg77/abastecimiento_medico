@@ -76,6 +76,11 @@ class CambiarEstadoSolicitudView(APIView):
         return Response(SolicitudSerializer(solicitud).data)
 
 
+def pagina_carro(request):
+    """Interfaz visual del carro; consume la API real usando JWT."""
+    return render(request, "pedidos/carro.html")
+
+
 def pagina_solicitudes(request):
     """
     Panel visual de demostración.
